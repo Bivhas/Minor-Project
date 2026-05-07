@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      background: #007bff;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .toggle {
+      text-align: center;
+      margin-top: 15px;
+      color: blue;
+      cursor: pointer;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2 id="formTitle">Login</h2>
+
+  <input type="text" id="username" placeholder="Enter Username">
+  <input type="password" id="password" placeholder="Enter Password">
+
+  <button onclick="handleAction()">Login</button>
+
+  <div class="toggle" onclick="toggleForm()">
+    Create New Account
+  </div>
+
+  <div class="message" id="message"></div>
+</div>
+
+<script>
+  let isLogin = true;
+
+  // Store users
+  let users = {};
+
+  function toggleForm() {
+    isLogin = !isLogin;
+
+    document.getElementById("formTitle").innerText =
+      isLogin ? "Login" : "Create Account";
+
+    document.querySelector("button").innerText =
+      isLogin ? "Login" : "Register";
+
+    document.querySelector(".toggle").innerText =
+      isLogin
+        ? "Create New Account"
+        : "Already have an account? Login";
+
+    document.getElementById("message").innerText = "";
+  }
+
+  function handleAction() {
+    let username = document.getElementById("username").value;
+    let password = document.getElementById("password").value;
+    let message = document.getElementById("message");
+
+    if (username === "" || password === "") {
+      message.style.color = "red";
+      message.innerText = "Please fill all fields.";
+      return;
+    }
+
+    if (isLogin) {
+      // LOGIN
+      if (users[username] && users[username] === password) {
+        message.style.color = "green";
+        message.innerText = "Login Successful!";
+
+        // Redirect to homepage
+        window.location.href = "homepage.html";
+
+      } else {
+        message.style.color = "red";
+        message.innerText = "Invalid Username or Password.";
+      }
+
+    } else {
+      // REGISTER
+      if (users[username]) {
+        message.style.color = "red";
+        message.innerText = "Username already exists.";
+
+      } else {
+        users[username] = password;
+
+        message.style.color = "green";
+        message.innerText = "Account Created Successfully!";
+
+        // Redirect to homepage
+        window.location.href = "homepage.html";
+      }
+    }
+  }
+</script>
+
+</body>
+</html>

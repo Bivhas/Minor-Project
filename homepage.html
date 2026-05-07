@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUSH </title>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body{
+      background:#f0f2f5;
+    }
+
+    /* TOP BAR */
+
+    .topbar{
+      background:#007bff;
+      color:white;
+      padding:15px 25px;
+      font-size:22px;
+      font-weight:bold;
+    }
+
+    /* MAIN CONTAINER */
+
+    .main-container{
+      width:900px;
+      height:85vh;
+      background:white;
+      margin:20px auto;
+      display:flex;
+      border-radius:10px;
+      overflow:hidden;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+
+    /* SIDEBAR */
+
+    .sidebar{
+      width:30%;
+      background:#f8f9fa;
+      border-right:1px solid #ddd;
+      padding:20px;
+    }
+
+    .sidebar h2{
+      margin-bottom:20px;
+      color:#007bff;
+    }
+
+    .search-box{
+      width:100%;
+      padding:10px;
+      border:1px solid #ccc;
+      border-radius:5px;
+      margin-bottom:20px;
+    }
+
+    .user{
+      padding:12px;
+      background:white;
+      border-radius:5px;
+      margin-bottom:10px;
+      cursor:pointer;
+      border:1px solid #ddd;
+      transition:0.3s;
+    }
+
+    .user:hover{
+      background:#e9f3ff;
+    }
+
+    /* CHAT AREA */
+
+    .chat-section{
+      width:70%;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .chat-header{
+      padding:20px;
+      border-bottom:1px solid #ddd;
+      font-size:20px;
+      font-weight:bold;
+      background:#fafafa;
+      color:#007bff;
+    }
+
+    .chat-box{
+      flex:1;
+      padding:20px;
+      overflow-y:auto;
+      background:white;
+    }
+
+    .message{
+      margin-bottom:15px;
+      max-width:70%;
+    }
+
+    .sender-name{
+      font-weight:bold;
+      margin-bottom:5px;
+      color:#007bff;
+    }
+
+    .message-text{
+      background:#e9f3ff;
+      padding:12px;
+      border-radius:10px;
+      display:inline-block;
+    }
+
+    /* INPUT */
+
+    .input-area{
+      padding:15px;
+      border-top:1px solid #ddd;
+      display:flex;
+      gap:10px;
+      background:white;
+    }
+
+    .input-area textarea{
+      flex:1;
+      resize:none;
+      padding:10px;
+      border:1px solid #ccc;
+      border-radius:5px;
+      height:50px;
+    }
+
+    .input-area button{
+      width:120px;
+      border:none;
+      background:#007bff;
+      color:white;
+      border-radius:5px;
+      cursor:pointer;
+      font-size:16px;
+    }
+
+    .input-area button:hover{
+      background:#0056b3;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    HUSH
+  </div>
+
+  <!-- MAIN APP -->
+  <div class="main-container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <h2>Chats</h2>
+
+      <input 
+        type="text" 
+        class="search-box"
+        id="receiver"
+        placeholder="Search User"
+      >
+
+      <div class="user" onclick="selectUser('You')">
+        Saved Messages (You)
+      </div>
+
+      <div class="user" onclick="selectUser('Alice')">
+        Alice
+      </div>
+
+      <div class="user" onclick="selectUser('Bob')">
+        Bob
+      </div>
+
+      <div class="user" onclick="selectUser('Charlie')">
+        Charlie
+      </div>
+
+    </div>
+
+    <!-- CHAT SECTION -->
+    <div class="chat-section">
+
+      <div class="chat-header">
+        HUSH
+      </div>
+
+      <div class="chat-box" id="chatBox"></div>
+
+      <div class="input-area">
+
+        <textarea 
+          id="messageInput"
+          placeholder="Type your message..."
+        ></textarea>
+
+        <button onclick="sendMessage()">
+          Send
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+<script>
+
+  let chats = {
+    "You": [],
+    "Alice": [],
+    "Bob": [],
+    "Charlie": []
+  };
+
+  // SELECT USER
+  function selectUser(name){
+
+    document.getElementById("receiver").value = name;
+
+    document.querySelector(".chat-header").innerText =
+      "HUSH - " + name;
+
+    loadMessages(name);
+  }
+
+  // LOAD CHAT HISTORY
+  function loadMessages(user){
+
+    let chatBox = document.getElementById("chatBox");
+    chatBox.innerHTML = "";
+
+    chats[user].forEach(msg => {
+
+      let div = document.createElement("div");
+      div.classList.add("message");
+
+      let senderName = user === "You" ? "Saved Messages" : user;
+
+      div.innerHTML = `
+        <div class="sender-name">${senderName}</div>
+        <div class="message-text">${msg}</div>
+      `;
+
+      chatBox.appendChild(div);
+
+    });
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // SEND MESSAGE
+  function sendMessage(){
+
+    let receiver = document.getElementById("receiver").value;
+    let message = document.getElementById("messageInput").value;
+
+    if(receiver === "" || message === ""){
+      alert("Please enter user and message");
+      return;
+    }
+
+    if(!chats[receiver]){
+      chats[receiver] = [];
+    }
+
+    chats[receiver].push(message);
+
+    loadMessages(receiver);
+
+    document.getElementById("messageInput").value = "";
+  }
+
+</script>
+
+</body>
+</html>
