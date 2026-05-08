@@ -1,150 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html> <!-- Declares this as an HTML5 document -->
+<html lang="en"> <!-- Sets the page language to English -->
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"> <!-- Supports all characters/symbols -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Makes the page responsive on mobile devices -->
   <title>Login Page</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      width: 320px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      background: #007bff;
-      color: white;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-
-    .toggle {
-      text-align: center;
-      margin-top: 15px;
-      color: blue;
-      cursor: pointer;
-    }
-
-    .message {
-      text-align: center;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css"> <!-- Links the external CSS file for styling -->
 </head>
 <body>
 
 <div class="container">
-  <h2 id="formTitle">Login</h2>
+  <h2 id="formTitle">Login</h2> <!-- Title changes dynamically between "Login" and "Create Account" -->
 
-  <input type="text" id="username" placeholder="Enter Username">
-  <input type="password" id="password" placeholder="Enter Password">
+  <input type="text" id="username" placeholder="Enter Username"> <!-- Username input field -->
+  <input type="password" id="password" placeholder="Enter Password"> <!-- Password input — 'type=password' hides the typed characters -->
 
-  <button onclick="handleAction()">Login</button>
+  <button onclick="handleAction()">Login</button> <!-- Calls handleAction() on click; label switches between Login/Register -->
 
-  <div class="toggle" onclick="toggleForm()">
+  <div class="toggle" onclick="toggleForm()"> <!-- Clicking this switches between Login and Register mode -->
     Create New Account
   </div>
 
-  <div class="message" id="message"></div>
+  <div class="message" id="message"></div> <!-- Displays success or error messages to the user -->
 </div>
 
 <script>
-  let isLogin = true;
+  let isLogin = true; // Tracks current mode: true = Login, false = Register
 
-  // Store users
-  let users = {};
+  let users = {}; // Acts as an in-memory "database" to store registered usernames and passwords
 
   function toggleForm() {
-    isLogin = !isLogin;
+    isLogin = !isLogin; // Flips the mode between Login and Register
 
+    // Updates the form title based on current mode
     document.getElementById("formTitle").innerText =
       isLogin ? "Login" : "Create Account";
 
+    // Updates the button label to match the current mode
     document.querySelector("button").innerText =
       isLogin ? "Login" : "Register";
 
+    // Updates the toggle link text to offer the opposite action
     document.querySelector(".toggle").innerText =
       isLogin
         ? "Create New Account"
         : "Already have an account? Login";
 
-    document.getElementById("message").innerText = "";
+    document.getElementById("message").innerText = ""; // Clears any previous message when switching modes
   }
 
   function handleAction() {
-    let username = document.getElementById("username").value;
-    let password = document.getElementById("password").value;
+    let username = document.getElementById("username").value; // Gets the entered username
+    let password = document.getElementById("password").value; // Gets the entered password
     let message = document.getElementById("message");
 
+    // Validates that both fields are filled before proceeding
     if (username === "" || password === "") {
       message.style.color = "red";
       message.innerText = "Please fill all fields.";
-      return;
+      return; // Stops execution if validation fails
     }
 
     if (isLogin) {
-      // LOGIN
-      if (users[username] && users[username] === password) {
+      // LOGIN FLOW
+      if (users[username] && users[username] === password) { // Checks if username exists and password matches
         message.style.color = "green";
         message.innerText = "Login Successful!";
-
-        // Redirect to homepage
-        window.location.href = "homepage.html";
-
+        window.location.href = "homepage.html"; // Redirects user to the homepage on success
       } else {
         message.style.color = "red";
-        message.innerText = "Invalid Username or Password.";
+        message.innerText = "Invalid Username or Password."; // Shown when credentials don't match
       }
 
     } else {
-      // REGISTER
-      if (users[username]) {
+      // REGISTER FLOW
+      if (users[username]) { // Prevents duplicate usernames
         message.style.color = "red";
         message.innerText = "Username already exists.";
-
       } else {
-        users[username] = password;
-
+        users[username] = password; // Saves the new user to the in-memory store
         message.style.color = "green";
         message.innerText = "Account Created Successfully!";
-
-        // Redirect to homepage
-        window.location.href = "homepage.html";
+        window.location.href = "homepage.html"; // Redirects to homepage after successful registration
       }
     }
   }
