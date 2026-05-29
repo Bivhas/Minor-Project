@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUSH - Secure Messaging  </title>
+  <link rel="stylesheet" href="homepagestyle.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-title">Hush</div>
+      <div class="search-wrap">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" id="searchInput" placeholder="Search Messenger" autocomplete="off" aria-label="Search chats">
+      </div>
+    </div>
+    <div class="user-list" id="userList" role="listbox" aria-label="Conversations"></div>
+  </aside>
+
+  <!-- CHAT AREA -->
+  <main class="chat-area" id="chatArea">
+    <div class="no-chat">
+      <div class="no-chat-icon"><i class="ti ti-messages" aria-hidden="true"></i></div>
+      <h3>Your messages</h3>
+      <p>Select a conversation to start chatting</p>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  const USERS = {
+    You:     { display: 'Saved Messages', color: 'av-you',     status: 'Only you can see this', online: false },
+    Alice:   { display: 'Alice',          color: 'av-alice',   status: 'Active now',             online: true  },
+    Bob:     { display: 'Bob',            color: 'av-bob',     status: 'Active 2m ago',          online: true  },
+    Charlie: { display: 'Charlie',        color: 'av-charlie', status: 'Active 1h ago',          online: false }
+  };
+
+  const chats = { You: [], Alice: [], Bob: [], Charlie: [] };
+  let current = null;
+
+  function esc(t) {
+    const d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+  }
+
+  function timeStr() {
+    const n = new Date();
+    return n.getHours().toString().padStart(2, '0') + ':' + n.getMinutes().toString().padStart(2, '0');
+  }
+
+  function renderSidebar(filter = '') {
+    const ul = document.getElementById('userList');
+    ul.innerHTML = '';
+    Object.keys(USERS)
+      .filter(u => USERS[u].display.toLowerCase().includes(filter.toLowerCase()))
+      .forEach(u => {
+        const msgs = chats[u];
+        const last = msgs.length ? msgs[msgs.length - 1].text : 'No messages yet';
+        const lastTime = msgs.length ? msgs[msgs.length - 1].time : '';
+        const info = USERS[u];
+
+        const item = document.createElement('div');
+        item.className = 'user-item' + (current === u ? ' active' : '');
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', current === u ? 'true' : 'false');
+        item.innerHTML = `
+          <div class="avatar ${info.color}" style="font-size:20px">
+            ${info.display.charAt(0)}
+            ${info.online ? '<div class="online-dot"></div>' : ''}
+          </div>
+          <div class="user-info">
+            <div class="user-name">${esc(info.display)}</div>
+            <div class="user-preview">${esc(last.length > 35 ? last.slice(0, 35) + '…' : last)}</div>
+          </div>
+          <div class="user-meta">
+            <span class="user-time">${lastTime}</span>
+          </div>`;
+        item.addEventListener('click', () => openChat(u));
+        ul.appendChild(item);
+      });
+  }
+
+  function openChat(user) {
+    current = user;
+    renderSidebar(document.getElementById('searchInput').value);
+
+    const info = USERS[user];
+    const area = document.getElementById('chatArea');
+    area.innerHTML = `
+      <header class="chat-header">
+        <div class="avatar avatar-sm ${info.color}">${info.display.charAt(0)}</div>
+        <div class="chat-header-info">
+          <div class="name">${esc(info.display)}</div>
+          <div class="status">${esc(info.status)}</div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="icon-btn" aria-label="Voice call"><i class="ti ti-phone" aria-hidden="true"></i></button>
+          <button class="icon-btn" aria-label="Video call"><i class="ti ti-video" aria-hidden="true"></i></button>
+          <button class="icon-btn" aria-label="View info"><i class="ti ti-info-circle" aria-hidden="true"></i></button>
+        </div>
+      </header>
+      <div class="messages" id="msgBox" role="log" aria-live="polite" aria-label="Messages"></div>
+      <div class="input-row">
+        <button class="icon-btn" aria-label="Add attachment"><i class="ti ti-circle-plus" aria-hidden="true"></i></button>
+        <button class="icon-btn" aria-label="Send photo"><i class="ti ti-photo" aria-hidden="true"></i></button>
+        <div class="msg-input-wrap">
+          <textarea id="msgInput" placeholder="Aa" rows="1" maxlength="1000" aria-label="Type a message"></textarea>
+        </div>
+        <button class="icon-btn" aria-label="Insert emoji"><i class="ti ti-mood-smile" aria-hidden="true"></i></button>
+        <button class="send-btn" id="sendBtn" disabled aria-label="Send message">
+          <i class="ti ti-send-2" aria-hidden="true"></i>
+        </button>
+      </div>`;
+
+    renderMessages();
+
+    const inp = document.getElementById('msgInput');
+    const btn = document.getElementById('sendBtn');
+
+    inp.addEventListener('input', () => {
+      btn.disabled = !inp.value.trim();
+      inp.style.height = 'auto';
+      inp.style.height = Math.min(inp.scrollHeight, 120) + 'px';
+    });
+
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMsg();
+      }
+    });
+
+    btn.addEventListener('click', sendMsg);
+    inp.focus();
+  }
+
+  function renderMessages(animateLast = false) {
+    const box = document.getElementById('msgBox');
+    if (!box) return;
+
+    const msgs = chats[current];
+    const info = USERS[current];
+
+    if (!msgs.length) {
+      box.innerHTML = `
+        <div class="empty-chat">
+          <div class="avatar ${info.color}" style="width:64px;height:64px;font-size:26px">${info.display.charAt(0)}</div>
+          <div class="ec-name">${esc(info.display)}</div>
+          <div class="ec-sub">Say hi to start a conversation</div>
+        </div>`;
+      return;
+    }
+
+    box.innerHTML = `<div class="date-divider">Today</div>`;
+
+    msgs.forEach((msg, i) => {
+      const isFirst = i === 0 || msgs[i - 1].sender !== msg.sender;
+      const isLast  = i === msgs.length - 1 || msgs[i + 1].sender !== msg.sender;
+      const isNew   = animateLast && i === msgs.length - 1;
+
+      const row = document.createElement('div');
+      row.className = `msg-row sent${!isLast ? ' not-last' : ''}${!isFirst ? ' not-first' : ''}`;
+
+      row.innerHTML = `
+        <div class="bubble-wrap">
+          <div class="bubble${isNew ? ' new' : ''}">${esc(msg.text)}</div>
+          <div class="msg-time">${msg.time}</div>
+        </div>`;
+
+      box.appendChild(row);
+    });
+
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function sendMsg() {
+    const inp = document.getElementById('msgInput');
+    const text = inp.value.trim();
+    if (!text || !current) return;
+
+    chats[current].push({ text, time: timeStr(), sender: 'me' });
+    inp.value = '';
+    inp.style.height = 'auto';
+    document.getElementById('sendBtn').disabled = true;
+
+    renderMessages(true);
+    renderSidebar(document.getElementById('searchInput').value);
+  }
+
+  document.getElementById('searchInput').addEventListener('input', e => renderSidebar(e.target.value));
+
+  renderSidebar();
+</script>
+
+</body>
+</html>
